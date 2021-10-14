@@ -146,11 +146,11 @@ bool LineParameterization<AmbientSpaceDimension>::ComputeJacobian(
   using AmbientVector = Eigen::Matrix<double, kDim, 1>;
   using ConstAmbientVectorRef =
       Eigen::Map<const Eigen::Matrix<double, kDim, 1>>;
-  using MatrixRef = Eigen::Map<
+  using InternalMatrixRef = Eigen::Map<
       Eigen::Matrix<double, 2 * kDim, 2 * (kDim - 1), Eigen::RowMajor>>;
 
   ConstAmbientVectorRef d(x_ptr + kDim);
-  MatrixRef jacobian(jacobian_ptr);
+  InternalMatrixRef jacobian(jacobian_ptr);
 
   // Clear the Jacobian as only half of the matrix is not zero.
   jacobian.setZero();

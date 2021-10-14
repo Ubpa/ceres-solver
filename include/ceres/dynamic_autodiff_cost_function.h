@@ -231,7 +231,8 @@ class DynamicAutoDiffCostFunction : public DynamicCostFunction {
       current_derivative_section = initial_derivative_section;
       current_derivative_section_cursor = initial_derivative_section_cursor;
 
-      for (int i = 0, parameter_cursor = 0; i < num_parameter_blocks; ++i) {
+      parameter_cursor = 0;
+      for (int i = 0; i < num_parameter_blocks; ++i) {
         for (int j = 0; j < parameter_block_sizes()[i];
              ++j, parameter_cursor++) {
           if (active_parameter_count < Stride &&
