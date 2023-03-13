@@ -61,15 +61,12 @@
 
 namespace ceres {
 namespace internal {
-namespace {
-
-bool EvaluateGradientNorms(Evaluator* evaluator,
-                           const Vector& x,
-                           LineSearchMinimizer::State* state,
-                           std::string* message) {
+bool Evaluator::EvaluateGradientNorms(const Vector& x,
+                                      LineSearchMinimizer::State* state,
+                                      std::string* message) {
   Vector negative_gradient = -state->gradient;
   Vector projected_gradient_step(x.size());
-  if (!evaluator->Plus(
+  if (!Plus(
           x.data(), negative_gradient.data(), projected_gradient_step.data())) {
     *message = "projected_gradient_step = Plus(x, -gradient) failed.";
     return false;
@@ -80,8 +77,6 @@ bool EvaluateGradientNorms(Evaluator* evaluator,
       (x - projected_gradient_step).lpNorm<Eigen::Infinity>();
   return true;
 }
-
-}  // namespace
 
 void LineSearchMinimizer::Minimize(const Minimizer::Options& options,
                                    double* parameters,
@@ -129,7 +124,7 @@ void LineSearchMinimizer::Minimize(const Minimizer::Options& options,
     return;
   }
 
-  if (!EvaluateGradientNorms(evaluator, x, &current_state, &summary->message)) {
+  if (!evaluator->EvaluateGradientNorms(x, &current_state, &summary->message)) {
     summary->termination_type = FAILURE;
     summary->message =
         "Initial cost and jacobian evaluation failed. More details: " +
@@ -368,10 +363,8 @@ void LineSearchMinimizer::Minimize(const Minimizer::Options& options,
       }
     }
 
-    if (!EvaluateGradientNorms(evaluator,
-                               optimal_point.vector_x,
-                               &current_state,
-                               &summary->message)) {
+    if (!evaluator->EvaluateGradientNorms(
+            optimal_point.vector_x, &current_state, &summary->message)) {
       summary->termination_type = FAILURE;
       summary->message =
           "Step failed to evaluate. This should not happen as the step was "

@@ -104,6 +104,10 @@ class CERES_EXPORT GradientProblem {
   // This call is not thread safe.
   bool Evaluate(const double* parameters, double* cost, double* gradient) const;
   bool Plus(const double* x, const double* delta, double* x_plus_delta) const;
+  bool EvaluateGradientNorms(const double* x,
+                             const double* gradient,
+                             double* gradient_squared_norm,
+                             double* gradient_max_norm) const;
 
   const FirstOrderFunction* function() const { return function_.get(); }
   FirstOrderFunction* mutable_function() { return function_.get(); }

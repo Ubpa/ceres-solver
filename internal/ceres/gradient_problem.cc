@@ -69,6 +69,14 @@ bool GradientProblem::Evaluate(const double* parameters,
               parameters, 1, scratch_.get(), gradient));
 }
 
+bool GradientProblem::EvaluateGradientNorms(const double* x,
+                                            const double* gradient,
+                                            double* gradient_squared_norm,
+                                            double* gradient_max_norm) const {
+  return function_->EvaluateGradientNorms(
+      x, gradient, gradient_squared_norm, gradient_max_norm);
+}
+
 bool GradientProblem::Plus(const double* x,
                            const double* delta,
                            double* x_plus_delta) const {

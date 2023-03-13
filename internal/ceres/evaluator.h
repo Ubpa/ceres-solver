@@ -40,6 +40,7 @@
 #include "ceres/execution_summary.h"
 #include "ceres/internal/port.h"
 #include "ceres/types.h"
+#include "ceres/line_search_minimizer.h"
 
 namespace ceres {
 
@@ -152,6 +153,10 @@ class CERES_EXPORT_INTERNAL Evaluator {
 
   // The number of residuals in the optimization problem.
   virtual int NumResiduals() const = 0;
+
+  virtual bool EvaluateGradientNorms(const Vector& x,
+                                     LineSearchMinimizer::State* state,
+                                     std::string* message);
 
   // The following two methods return copies instead of references so
   // that the base class implementation does not have to worry about

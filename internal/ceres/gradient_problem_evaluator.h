@@ -76,6 +76,18 @@ class GradientProblemEvaluator : public Evaluator {
     return problem_.Plus(state, delta, state_plus_delta);
   }
 
+  virtual bool EvaluateGradientNorms(
+      const Vector& x, LineSearchMinimizer::State* state, std::string* message) override
+  {
+    if (problem_.EvaluateGradientNorms(x.data(),
+                                       state->gradient.data(),
+                                       &state->gradient_squared_norm,
+                                       &state->gradient_max_norm)) {
+      return true;
+    }
+    return Evaluator::EvaluateGradientNorms(x, state, message);
+  }
+
   int NumParameters() const final { return problem_.NumParameters(); }
 
   int NumEffectiveParameters() const final {

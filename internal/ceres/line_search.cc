@@ -429,7 +429,7 @@ void WolfeLineSearch::DoSearch(const double step_size_estimate,
     // produce a valid point when ArmijoLineSearch would succeed, we return the
     // point with the lowest cost found thus far which satsifies the Armijo
     // condition (but not the Wolfe conditions).
-    summary->optimal_point = bracket_low;
+    summary->optimal_point = std::move(bracket_low);
     summary->success = true;
     return;
   }
@@ -540,8 +540,8 @@ bool WolfeLineSearch::BracketingPhase(const FunctionSample& initial_position,
       // condition, or has stepped past an inflection point of f() relative to
       // previous step size.
       *do_zoom_search = true;
-      *bracket_low = previous;
-      *bracket_high = current;
+      *bracket_low = std::move(previous);
+      *bracket_high = std::move(current);
       VLOG(3) << std::scientific
               << std::setprecision(kErrorMessageNumericPrecision)
               << "Bracket found: current step (" << current.x
@@ -556,7 +556,7 @@ bool WolfeLineSearch::BracketingPhase(const FunctionSample& initial_position,
       // Current step size satisfies the strong Wolfe conditions, and is thus a
       // valid termination point, therefore a Zoom not required.
       *bracket_low = current;
-      *bracket_high = current;
+      *bracket_high = std::move(current);
       VLOG(3) << std::scientific
               << std::setprecision(kErrorMessageNumericPrecision)
               << "Bracketing phase found step size: " << current.x
@@ -572,8 +572,8 @@ bool WolfeLineSearch::BracketingPhase(const FunctionSample& initial_position,
       // even though f(previous) > f(current).
       *do_zoom_search = true;
       // Note inverse ordering from first bracket case.
-      *bracket_low = current;
-      *bracket_high = previous;
+      *bracket_low = std::move(current);
+      *bracket_high = std::move(previous);
       VLOG(3) << "Bracket found: current step (" << current.x
               << ") satisfies Armijo, but has gradient >= 0, thus have passed "
               << "an inflection point of f().";

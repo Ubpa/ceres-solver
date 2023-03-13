@@ -47,6 +47,13 @@ class CERES_EXPORT FirstOrderFunction {
                         double* cost,
                         double* gradient) const = 0;
   virtual int NumParameters() const = 0;
+
+  virtual bool EvaluateGradientNorms(const double* x,
+                                     const double* gradient,
+                                     double* gradient_squared_norm,
+                                     double* gradient_max_norm) const {
+    return false;
+  }
 };
 
 }  // namespace ceres
