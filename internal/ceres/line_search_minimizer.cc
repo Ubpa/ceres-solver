@@ -239,7 +239,7 @@ void LineSearchMinimizer::Minimize(const Minimizer::Options& options,
       current_state.search_direction = -current_state.gradient;
     } else {
       line_search_status = line_search_direction->NextDirection(
-          previous_state, current_state, &current_state.search_direction);
+          evaluator, previous_state, current_state, &current_state.search_direction);
     }
 
     if (!line_search_status &&

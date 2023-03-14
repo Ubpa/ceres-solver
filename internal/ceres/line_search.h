@@ -287,7 +287,8 @@ class WolfeLineSearch : public LineSearch {
                        FunctionSample* bracket_low,
                        FunctionSample* bracket_high,
                        bool* perform_zoom_search,
-                       Summary* summary) const;
+                       Summary* summary,
+                       FunctionSample** bracket_low_ptr) const;
   // Returns true iff final_line_sample satisfies strong Wolfe conditions.
   bool ZoomPhase(const FunctionSample& initial_position,
                  FunctionSample bracket_low,

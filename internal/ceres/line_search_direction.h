@@ -63,6 +63,13 @@ class LineSearchDirection {
   virtual bool NextDirection(const LineSearchMinimizer::State& previous,
                              const LineSearchMinimizer::State& current,
                              Vector* search_direction) = 0;
+
+  virtual bool NextDirection(Evaluator* evaluator,
+                             const LineSearchMinimizer::State& previous,
+                             const LineSearchMinimizer::State& current,
+                             Vector* search_direction) {
+    return NextDirection(previous, current, search_direction);
+  }
 };
 
 }  // namespace internal

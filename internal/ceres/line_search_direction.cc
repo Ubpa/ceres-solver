@@ -31,8 +31,10 @@
 #include "ceres/line_search_direction.h"
 
 #include "ceres/internal/eigen.h"
+#include "ceres/first_order_function.h"
 #include "ceres/line_search_minimizer.h"
 #include "ceres/low_rank_inverse_hessian.h"
+#include "ceres/evaluator.h"
 #include "glog/logging.h"
 
 namespace ceres {
@@ -134,6 +136,84 @@ class LBFGS : public LineSearchDirection {
     }
 
     return true;
+  }
+
+  virtual bool NextDirection(Evaluator* evaluator,
+                             const LineSearchMinimizer::State& previous,
+                             const LineSearchMinimizer::State& current,
+                             Vector* search_direction) {
+    auto getNextDirectionUpdateContext =
+        [&](double delta_x_dot_delta_gradient) {
+          NextDirectionUpdateContext ctx;
+          if (delta_x_dot_delta_gradient <
+              /*kLBFGSSecantConditionHessianUpdateTolerance*/ 1e-14) {
+            return ctx;
+          }
+          int next = low_rank_inverse_hessian_.indices_.size();
+          // Once the size of the list reaches max_num_corrections_, simulate
+          // a circular buffer by removing the first element of the list and
+          // making it the next position where the LBFGS history is stored.
+          if (next == low_rank_inverse_hessian_.max_num_corrections_) {
+            next = low_rank_inverse_hessian_.indices_.front();
+            low_rank_inverse_hessian_.indices_.pop_front();
+          }
+
+          low_rank_inverse_hessian_.indices_.push_back(next);
+          ctx.valid = true;
+          ctx.delta_x_history_col_next =
+              low_rank_inverse_hessian_.delta_x_history_.col(next).data();
+          ctx.delta_gradient_history_col_next =
+              low_rank_inverse_hessian_.delta_gradient_history_.col(next)
+                  .data();
+          ctx.delta_x_dot_delta_gradient_next =
+              &low_rank_inverse_hessian_.delta_x_dot_delta_gradient_(next);
+          return ctx;
+        };
+
+    auto getRightMultiplyContext =
+        [&, it = low_rank_inverse_hessian_.indices_.rbegin()]() mutable {
+          RightMultiplyContext ctx;
+          if (it == low_rank_inverse_hessian_.indices_.rend()) {
+            return ctx;
+          }
+
+          ctx.valid = true;
+          ctx.delta_x_history_col_it =
+              low_rank_inverse_hessian_.delta_x_history_.col(*it).data();
+          ctx.delta_x_dot_delta_gradient_it =
+              low_rank_inverse_hessian_.delta_x_dot_delta_gradient_(*it);
+          ctx.delta_gradient_history_col_it =
+              low_rank_inverse_hessian_.delta_gradient_history_.col(*it).data();
+
+          ++it;
+          return ctx;
+        };
+
+    double search_direction_dot_current_gradient = 0.;
+    if (evaluator->NextDirection(
+            previous.search_direction.data(),
+            previous.step_size,
+            current.gradient.data(),
+            previous.gradient.data(),
+            getNextDirectionUpdateContext,
+            &low_rank_inverse_hessian_.approximate_eigenvalue_scale_,
+            search_direction->data(),
+            getRightMultiplyContext,
+            low_rank_inverse_hessian_.use_approximate_eigenvalue_scaling_,
+            &search_direction_dot_current_gradient)) {
+      if (search_direction_dot_current_gradient >= 0.0) {
+        LOG(WARNING) << "Numerical failure in L-BFGS update: inverse Hessian "
+                     << "approximation is not positive definite, and thus "
+                     << "initial gradient for search direction is positive: "
+                     << search_direction_dot_current_gradient;
+        is_positive_definite_ = false;
+        return false;
+      }
+
+      return true;
+    }
+
+    return NextDirection(previous, current, search_direction);
   }
 
  private:

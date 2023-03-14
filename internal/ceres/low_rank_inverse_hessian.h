@@ -91,7 +91,7 @@ class LowRankInverseHessian : public LinearOperator {
   int num_rows() const final { return num_parameters_; }
   int num_cols() const final { return num_parameters_; }
 
- private:
+ public:
   const int num_parameters_;
   const int max_num_corrections_;
   const bool use_approximate_eigenvalue_scaling_;

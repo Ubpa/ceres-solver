@@ -33,7 +33,23 @@
 
 #include "ceres/internal/port.h"
 
+#include <functional>
+
 namespace ceres {
+
+struct NextDirectionUpdateContext {
+  bool valid = false;
+  double* delta_x_history_col_next = nullptr;
+  double* delta_gradient_history_col_next = nullptr;
+  double* delta_x_dot_delta_gradient_next = nullptr;
+  double* approximate_eigenvalue_scale_ = nullptr;
+};
+struct RightMultiplyContext {
+  bool valid = false;
+  const double* delta_x_history_col_it = nullptr;
+  double delta_x_dot_delta_gradient_it = 0.;
+  const double* delta_gradient_history_col_it = nullptr;
+};
 
 // A FirstOrderFunction object implements the evaluation of a function
 // and its gradient.
@@ -52,6 +68,21 @@ class CERES_EXPORT FirstOrderFunction {
                                      const double* gradient,
                                      double* gradient_squared_norm,
                                      double* gradient_max_norm) const {
+    return false;
+  }
+
+  virtual bool NextDirection(
+      const double* previous_search_direction,
+      double previous_step_size,
+      const double* current_gradient,
+      const double* previous_gradient,
+      std::function<NextDirectionUpdateContext(double)>
+          getNextDirectionUpdateContext,
+      double* approximate_eigenvalue_scale_,
+      double* search_direction,
+      std::function<RightMultiplyContext(void)> getRightMultiplyContext,
+      bool use_approximate_eigenvalue_scaling_,
+      double* search_direction_dot_current_gradient) const {
     return false;
   }
 };

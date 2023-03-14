@@ -108,6 +108,18 @@ class CERES_EXPORT GradientProblem {
                              const double* gradient,
                              double* gradient_squared_norm,
                              double* gradient_max_norm) const;
+  bool NextDirection(
+      const double* previous_search_direction,
+      double previous_step_size,
+      const double* current_gradient,
+      const double* previous_gradient,
+      std::function<NextDirectionUpdateContext(double)>
+          getNextDirectionUpdateContext,
+      double* approximate_eigenvalue_scale_,
+      double* search_direction,
+      std::function<RightMultiplyContext(void)> getRightMultiplyContext,
+      bool use_approximate_eigenvalue_scaling_,
+      double* search_direction_dot_current_gradient) const;
 
   const FirstOrderFunction* function() const { return function_.get(); }
   FirstOrderFunction* mutable_function() { return function_.get(); }

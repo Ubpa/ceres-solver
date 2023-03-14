@@ -41,6 +41,7 @@
 #include "ceres/internal/port.h"
 #include "ceres/types.h"
 #include "ceres/line_search_minimizer.h"
+#include "ceres/first_order_function.h"
 
 namespace ceres {
 
@@ -157,6 +158,48 @@ class CERES_EXPORT_INTERNAL Evaluator {
   virtual bool EvaluateGradientNorms(const Vector& x,
                                      LineSearchMinimizer::State* state,
                                      std::string* message);
+  // delta_x = previous_search_direction * previous_step_size
+  // delta_gradient = current_gradient - previous_gradient
+  // delta_x_dot_delta_gradient = delta_x.dot(delta_gradient)
+  // update_context = getNextDirectionUpdateContext(delta_x_dot_delta_gradient);
+  // if(update_context.valid) {
+  //   update_context.delta_x_history_col_next = delta_x
+  //   update_context.delta_gradient_history_col_next = delta_gradient
+  //   update_context.delta_x_dot_delta_gradient_next = delta_x_dot_delta_gradient
+  //   update_context.approximate_eigenvalue_scale_ = delta_x_dot_delta_gradient / delta_gradient.squaredNorm()
+  // }
+  // search_direction = current_gradient
+  // ctxs = {getRightMultiplyContext()...}
+  // alpha
+  // for(auto ctx : ctxs) {
+  //   alpha_i = ctx.delta_x_history_col_it.dot(search_direction) / ctx.delta_x_dot_delta_gradient_it;
+  //   search_direction -= alpha_i * ctx.delta_gradient_history_col_it
+  //   alpha(i) = alpha_i
+  // }
+  // if(use_approximate_eigenvalue_scaling_) {
+  //   search_direction *= approximate_eigenvalue_scale_
+  // }
+  // for(auto ctx : ctxs) {
+  //   beta = ctx.delta_gradient_history_col_it.dot(search_direction) / ctx.delta_x_dot_delta_gradient_it;
+  //   search_direction -= alpha_i * ctx.delta_x_history_col_it
+  //   search_direction += ctx.delta_x_history_col_it * (alpha_i - beta)
+  // }
+  // search_direction *= -1
+  // 
+  virtual bool NextDirection(
+      const double* previous_search_direction,
+      double previous_step_size,
+      const double* current_gradient,
+      const double* previous_gradient,
+      std::function<NextDirectionUpdateContext(double)>
+          getNextDirectionUpdateContext,
+      double* approximate_eigenvalue_scale_,
+      double* search_direction,
+      std::function<RightMultiplyContext(void)> getRightMultiplyContext,
+      bool use_approximate_eigenvalue_scaling_,
+      double* search_direction_dot_current_gradient) const {
+    return false;
+  }
 
   // The following two methods return copies instead of references so
   // that the base class implementation does not have to worry about

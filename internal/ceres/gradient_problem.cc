@@ -77,6 +77,31 @@ bool GradientProblem::EvaluateGradientNorms(const double* x,
       x, gradient, gradient_squared_norm, gradient_max_norm);
 }
 
+bool GradientProblem::NextDirection(
+    const double* previous_search_direction,
+    double previous_step_size,
+    const double* current_gradient,
+    const double* previous_gradient,
+    std::function<NextDirectionUpdateContext(double)>
+        getNextDirectionUpdateContext,
+    double* approximate_eigenvalue_scale_,
+    double* search_direction,
+    std::function<RightMultiplyContext(void)> getRightMultiplyContext,
+    bool use_approximate_eigenvalue_scaling_,
+    double* search_direction_dot_current_gradient) const
+{
+  return function_->NextDirection(previous_search_direction,
+                                  previous_step_size,
+                                  current_gradient,
+                                  previous_gradient,
+                                  std::move(getNextDirectionUpdateContext),
+                                  approximate_eigenvalue_scale_,
+                                  search_direction,
+                                  std::move(getRightMultiplyContext),
+                                  use_approximate_eigenvalue_scaling_,
+                                  search_direction_dot_current_gradient);
+}
+
 bool GradientProblem::Plus(const double* x,
                            const double* delta,
                            double* x_plus_delta) const {

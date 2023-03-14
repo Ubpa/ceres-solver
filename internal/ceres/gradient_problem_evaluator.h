@@ -88,6 +88,30 @@ class GradientProblemEvaluator : public Evaluator {
     return Evaluator::EvaluateGradientNorms(x, state, message);
   }
 
+  virtual bool NextDirection(
+      const double* previous_search_direction,
+      double previous_step_size,
+      const double* current_gradient,
+      const double* previous_gradient,
+      std::function<NextDirectionUpdateContext(double)>
+          getNextDirectionUpdateContext,
+      double* approximate_eigenvalue_scale_,
+      double* search_direction,
+      std::function<RightMultiplyContext(void)> getRightMultiplyContext,
+      bool use_approximate_eigenvalue_scaling_,
+      double* search_direction_dot_current_gradient) const {
+    return problem_.NextDirection(previous_search_direction,
+                                  previous_step_size,
+                                  current_gradient,
+                                  previous_gradient,
+                                  getNextDirectionUpdateContext,
+                                  approximate_eigenvalue_scale_,
+                                  search_direction,
+                                  getRightMultiplyContext,
+                                  use_approximate_eigenvalue_scaling_,
+                                  search_direction_dot_current_gradient);
+  }
+
   int NumParameters() const final { return problem_.NumParameters(); }
 
   int NumEffectiveParameters() const final {
