@@ -147,6 +147,11 @@ class LBFGS : public LineSearchDirection {
           NextDirectionUpdateContext ctx;
           if (delta_x_dot_delta_gradient <
               /*kLBFGSSecantConditionHessianUpdateTolerance*/ 1e-14) {
+            VLOG(2) << "Skipping L-BFGS Update, delta_x_dot_delta_gradient too "
+                    << "small: " << delta_x_dot_delta_gradient
+                    << ", tolerance: "
+                    << /*kLBFGSSecantConditionHessianUpdateTolerance*/ 1e-14
+                    << " (Secant condition).";
             return ctx;
           }
           int next = low_rank_inverse_hessian_.indices_.size();
